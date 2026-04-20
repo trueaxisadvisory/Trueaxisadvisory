@@ -117,6 +117,20 @@
         .btn-secondary { background: #ecf0f1; color: #2c3e50; }
         .btn-secondary:hover { background: #d5dbdb; }
         .unanswered-note { font-size: 12px; color: #e74c3c; display: none; }
+        .intake-group { margin-bottom: 20px; }
+        .intake-label { font-size: 13px; font-weight: 600; color: #2c3e50; margin-bottom: 6px; display: block; }
+        .intake-input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid #ecf0f1;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #2c3e50;
+            transition: border-color 0.2s ease;
+            outline: none;
+        }
+        .intake-input:focus { border-color: #c9a961; }
+        .intake-error { font-size: 12px; color: #e74c3c; display: none; margin-top: 4px; }
         .intro-text { font-size: 15px; color: #555; line-height: 1.7; margin-bottom: 24px; }
         .intro-text strong { color: #2c3e50; }
         .intro-list { margin: 20px 0; }
@@ -199,7 +213,40 @@
             <p class="intro-text">Answer based on observable conditions, not aspirations. What is true today, not what you want to be true.</p>
             <div class="nav-buttons">
                 <div></div>
-                <button class="btn-primary" onclick="startAssessment()">Begin Assessment</button>
+                <button class="btn-primary" onclick="showIntake()">Begin Assessment</button>
+            </div>
+        </div>
+        <div class="section" id="intake-section">
+            <div class="axis-header" style="margin-bottom: 8px;">
+                <span class="axis-badge" style="background: #1a3a5c;">Assessment Info</span>
+            </div>
+            <div class="axis-description">Please provide the following information before beginning the assessment.</div>
+            <div class="intake-group">
+                <label class="intake-label">Your Name</label>
+                <input type="text" class="intake-input" id="intake-name" placeholder="First and last name">
+                <div class="intake-error" id="error-name">Please enter your name</div>
+            </div>
+            <div class="intake-group">
+                <label class="intake-label">Organization Name</label>
+                <input type="text" class="intake-input" id="intake-org" placeholder="Organization or company name">
+                <div class="intake-error" id="error-org">Please enter your organization name</div>
+            </div>
+            <div class="intake-group">
+                <label class="intake-label">Your Title / Role</label>
+                <input type="text" class="intake-input" id="intake-title" placeholder="Your position or role">
+                <div class="intake-error" id="error-title">Please enter your title</div>
+            </div>
+            <div class="intake-group">
+                <label class="intake-label">Email Address</label>
+                <input type="email" class="intake-input" id="intake-email" placeholder="your@email.com">
+                <div class="intake-error" id="error-email">Please enter a valid email address</div>
+            </div>
+            <div class="nav-buttons">
+                <div></div>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span class="unanswered-note" id="note-intake">Please complete all fields</span>
+                    <button class="btn-primary" onclick="submitIntake()">Begin Assessment</button>
+                </div>
             </div>
         </div>
         <div class="section" id="clarity-section"></div>
@@ -280,6 +327,35 @@ const scaleClasses = ['sa', 'a', 'd', 'sd'];
 let answers = {};
 let currentAxis = null;
 const axisOrder = ['clarity', 'execution', 'ownership', 'challenge'];
+
+let intakeData = {};
+
+function showIntake() {
+    showSection('intake-section');
+    updateProgress();
+}
+
+function submitIntake() {
+    const name = document.getElementById('intake-name').value.trim();
+    const org = document.getElementById('intake-org').value.trim();
+    const title = document.getElementById('intake-title').value.trim();
+    const email = document.getElementById('intake-email').value.trim();
+    const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+    document.getElementById('error-name').style.display = name ? 'none' : 'block';
+    document.getElementById('error-org').style.display = org ? 'none' : 'block';
+    document.getElementById('error-title').style.display = title ? 'none' : 'block';
+    document.getElementById('error-email').style.display = emailValid ? 'none' : 'block';
+
+    if (!name || !org || !title || !emailValid) {
+        document.getElementById('note-intake').style.display = 'inline';
+        return;
+    }
+
+    document.getElementById('note-intake').style.display = 'none';
+    intakeData = { name, org, title, email };
+    startAssessment();
+}
 
 function startAssessment() {
     axisOrder.forEach(axisKey => {
@@ -424,7 +500,7 @@ function generateResults() {
     let html = '';
     html += '<div class="results-header">';
     html += '<h2>Diagnostic Results</h2>';
-    html += '<p>Assessment completed ' + new Date().toLocaleDateString() + '</p>';
+    html += '<p>' + (intakeData.org ? intakeData.org + ' &nbsp;|&nbsp; ' : '') + (intakeData.name ? intakeData.name + ' &nbsp;|&nbsp; ' : '') + 'Assessment completed ' + new Date().toLocaleDateString() + '</p>';
     html += '</div>';
     html += '<div class="overview-grid">';
     axisOrder.forEach(axisKey => {
@@ -540,6 +616,10 @@ function submitResults() {
     }
     const formData = new FormData();
     formData.append('email', 'trueaxisadvisory@gmail.com');
+    formData.append('respondent_name', intakeData.name || '');
+    formData.append('organization', intakeData.org || '');
+    formData.append('respondent_title', intakeData.title || '');
+    formData.append('respondent_email', intakeData.email || '');
     formData.append('report', reportText);
     formData.append('clarity_score', getAxisScore('clarity'));
     formData.append('execution_score', getAxisScore('execution'));
@@ -562,7 +642,12 @@ function submitResults() {
 function reset() {
     answers = {};
     currentAxis = null;
+    intakeData = {};
     document.getElementById('success-message').classList.remove('show');
+    document.getElementById('intake-name').value = '';
+    document.getElementById('intake-org').value = '';
+    document.getElementById('intake-title').value = '';
+    document.getElementById('intake-email').value = '';
     updateProgress();
     showSection('intro-section');
 }
