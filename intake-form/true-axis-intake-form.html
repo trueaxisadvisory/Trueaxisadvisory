@@ -496,12 +496,81 @@
             padding-right: 40px;
         }
 
-        select:focus {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23c9a961' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
-        }
-
         .hidden-field {
             display: none;
+        }
+
+        .confirmation-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 22, 40, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .confirmation-modal.show {
+            display: flex;
+        }
+
+        .confirmation-content {
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            text-align: center;
+            max-width: 500px;
+            box-shadow: 0 20px 60px rgba(10, 22, 40, 0.3);
+        }
+
+        .confirmation-icon {
+            width: 60px;
+            height: 60px;
+            background: #28a745;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 32px;
+            color: white;
+        }
+
+        .confirmation-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #0a1628;
+            margin-bottom: 12px;
+        }
+
+        .confirmation-message {
+            font-size: 16px;
+            color: #7f8c8d;
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        .confirmation-button {
+            background: #c9a961;
+            color: white;
+            padding: 12px 32px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            font-family: 'Montserrat', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .confirmation-button:hover {
+            background: #b39451;
+            transform: translateY(-2px);
         }
     </style>
 </head>
@@ -919,6 +988,10 @@
                         </tr>
                     `;
                     updateTaskCount();
+                    
+                    // Show confirmation modal
+                    document.getElementById('confirmationModal').classList.add('show');
+                    
                     setTimeout(() => {
                         successMessage.classList.remove('show');
                     }, 5000);
@@ -942,5 +1015,14 @@
 
         updateTaskCount();
     </script>
+
+    <div class="confirmation-modal" id="confirmationModal">
+        <div class="confirmation-content">
+            <div class="confirmation-icon">✓</div>
+            <div class="confirmation-title">Submission Received</div>
+            <div class="confirmation-message">Your weekly operational intake has been successfully submitted. Thank you.</div>
+            <button class="confirmation-button" onclick="location.reload()">Done</button>
+        </div>
+    </div>
 </body>
 </html>
